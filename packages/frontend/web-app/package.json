@@ -1,5 +1,5 @@
 {
-  "name": "@student-loan-app/frontend",
+  "name": "@student-loan-app/frontend-web-app",
   "version": "1.0.0",
   "description": "",
   "main": "src/index.js",
@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "@material-ui/core": "^4.11.3",
+    "@student-loan-app/shared-api-client": "*",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-redux": "^7.2.3",

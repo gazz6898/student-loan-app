@@ -3,7 +3,13 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "build": "lerna run build"
+    "bootstrap": "lerna clean --yes && lerna bootstrap",
+    "build": "lerna run build",
+    "docker-prune": "docker compose down && docker volume prune -f && docker image prune -f",
+    "setup": "npm run bootstrap && npm run build",
+    "start:backend": "lerna run --scope=@student-loan-app/backend* start:dev",
+    "start:frontend": "npm run start:dev --prefix=packages/frontend/web-app",
+    "start": "docker compose up -d && npm run start:frontend"
   },
   "keywords": [],
   "author": "",
