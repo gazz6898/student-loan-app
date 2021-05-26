@@ -13,6 +13,7 @@
     "@ku-loan-app/libs-api-client": "0.0.1",
     "@material-ui/core": "^4.11.3",
     "@reduxjs/toolkit": "^1.5.1",
+    "prop-types": "^15.7.2",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-redux": "^7.2.3",

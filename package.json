@@ -10,11 +10,10 @@
     "bootstrap": "lerna clean --yes && lerna bootstrap",
     "build": "lerna run build",
     "build:libs": "lerna run --scope=@ku-loan-app/libs* build",
-    "build:backend": "lerna run --scope=@ku-loan-app/backend* build",
     "docker-prune": "docker compose down && docker volume prune -f && docker image prune -f",
     "publish-libs": "bash ./scripts/publish-libs.bash",
     "setup": "npm run bootstrap && npm run build",
-    "start:backend": "lerna run --scope=@ku-loan-app/backend* start:dev",
+    "start:backend": "docker compose up -d",
     "start:frontend": "npm run start:dev --prefix=packages/frontend/web-app",
     "start": "docker compose up -d && npm run start:frontend"
   },

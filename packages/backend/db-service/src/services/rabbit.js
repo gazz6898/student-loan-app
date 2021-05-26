@@ -2,11 +2,11 @@ import amqp from 'amqplib/callback_api';
 
 const URL = `amqp://${process.env.AMQP_HOST}`;
 const QUEUE = process.env.QUEUE_NAME ?? 'default_queue';
-const EXCHANGE = 'topic_test';
+const EXCHANGE = 'messages';
 
 /**
  *
- * @returns {Promise<amqp.Channel>}
+ * @returns {Promise<amqp.Connection>}
  */
 const connectMQ = async () =>
   new Promise((resolve, reject) => {
