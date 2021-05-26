@@ -1,6 +1,6 @@
 {
-  "name": "@student-loan-app/backend-auth-service",
-  "version": "1.0.0",
+  "name": "@ku-loan-app/backend-auth-service",
+  "version": "0.0.1",
   "description": "",
   "main": "src/index.js",
   "scripts": {
@@ -16,7 +16,10 @@
     "amqplib": "^0.7.1",
     "convict": "^6.0.1",
     "cors": "^2.8.5",
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "node-rsa": "^1.1.1",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@babel/core": "^7.13.16",
@@ -26,5 +29,6 @@
     "gulp": "^4.0.2",
     "gulp-babel": "^8.0.0",
     "gulp-uglify": "^3.0.2"
-  }
+  },
+  "private": true
 }

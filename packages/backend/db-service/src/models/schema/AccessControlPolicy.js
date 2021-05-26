@@ -1,20 +1,17 @@
 import mongoose from 'mongoose';
 
 const schema = new mongoose.Schema({
-  email: {
+  rule: {
     type: String,
-    required: true,
-    unique: true,
-  },
-  password: {
-    type: String,
-    required: true,
+    validate: {
+      validator: /([a-z*]+)(:[a-z]*)*/i.test,
+    },
   },
 });
 
 export default {
-  collectionName: 'user',
-  modelName: 'User',
+  collectionName: 'accessControlPolicies',
+  modelName: 'AccessControlPolicy',
   schema,
   seed: [
     {

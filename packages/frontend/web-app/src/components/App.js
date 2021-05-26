@@ -1,15 +1,20 @@
 import React, { PureComponent } from 'react';
 import { withStyles } from '@material-ui/styles';
 
+import { connect } from 'react-redux';
+
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
 import Container from '@material-ui/core/Container';
-import Typography from '@material-ui/core/Typography';
 
-import { client } from '@student-loan-app/shared-api-client';
+import { APIS, client } from '@ku-loan-app/libs-api-client';
+
+import Login from './Login';
+
+import { login } from '../util/redux/reducers/metadata';
 
 const styles = theme => ({
   root: {
@@ -42,43 +47,24 @@ class App extends PureComponent {
   }
 
   async componentDidMount() {
-    client.test();
-    const backendResponse = await fetch('http://localhost:4002/echo', {
-      method: 'POST',
-      mode: 'cors',
-      credentials: 'same-origin',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ message: 'hello, world!' }),
-    }).then(res => res.json());
+    const backendResponse = await client
+      .query({ model: 'User', where: {} });
     this.setState({ backendResponse });
   }
 
   render() {
-    const { classes } = this.props;
+    const { classes, login, token } = this.props;
     const { backendResponse } = this.state;
 
     return (
       <div className={classes.root}>
         <Container maxWidth='sm'>
           <Card>
-            <CardHeader title='Hello, World!' />
+            <CardHeader title='Student Loan App' />
             <CardContent>
-              <Typography align='center'>
-                {backendResponse
-                  ? JSON.stringify({ backendResponse }, null, 2)
-                  : `The backend didn't respond... :(`}
-              </Typography>
+              <pre>{`Token: ${token}`}</pre>
             </CardContent>
-            <CardActions className={classes.actionBar}>
-              <Button color='primary' variant='contained'>
-                Cool
-              </Button>
-              <Button color='secondary' variant='contained'>
-                Good
-              </Button>
-            </CardActions>
+            <Login onSubmit={login} />
           </Card>
         </Container>
       </div>
@@ -86,4 +72,6 @@ class App extends PureComponent {
   }
 }
 
-export default withStyles(styles)(App);
+const mapStateToProps = ({ metadata: { token } }) => ({ token });
+
+export default connect(mapStateToProps, { login })(withStyles(styles)(App));

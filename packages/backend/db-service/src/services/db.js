@@ -1,12 +1,12 @@
 import mongoose from 'mongoose';
 
 import config from '../config';
-import schemaMap from './schema';
-import { seedModel } from './util';
+import schemaMap from '../models/schema';
+import { seedModel } from '../models/util';
 
 /**
  *
- * @returns {Promise<{ client: mongoose.Mongoose, modelMap: { [model: string]: mongoose.Model<mongoose.Document<any, any>, {}, {}> } }>}
+ * @returns {Promise<mongoose.Mongoose>}
  */
 const connectDB = async () => {
   await mongoose
@@ -27,19 +27,18 @@ const connectDB = async () => {
       process.exit(1);
     });
 
-  const modelMap = {};
   for await (const { collectionName, modelName, schema, seed = [] } of Object.values(schemaMap)) {
     const model = mongoose.model(modelName, schema, collectionName);
-    modelMap[modelName] = model;
+    await model.init();
     console.log(`Model Loaded: ${modelName}`);
-    
+
     if (seed.length) {
       await seedModel(model, seed);
       console.log(`Model Seeded: ${modelName}`);
     }
   }
 
-  return { client: mongoose, modelMap };
+  return mongoose;
 };
 
 export default connectDB;

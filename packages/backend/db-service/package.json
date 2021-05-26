@@ -1,6 +1,6 @@
 {
-  "name": "@student-loan-app/backend-db-service",
-  "version": "1.0.0",
+  "name": "@ku-loan-app/backend-db-service",
+  "version": "0.0.1",
   "description": "",
   "main": "src/index.js",
   "scripts": {
@@ -27,5 +27,6 @@
     "gulp": "^4.0.2",
     "gulp-babel": "^8.0.0",
     "gulp-uglify": "^3.0.2"
-  }
+  },
+  "private": true
 }

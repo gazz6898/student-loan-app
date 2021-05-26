@@ -1,6 +1,6 @@
 {
-  "name": "@student-loan-app/shared-api-client",
-  "version": "1.0.0",
+  "name": "@ku-loan-app/libs-amqp-utils",
+  "version": "0.0.2",
   "description": "",
   "main": "dist/index.js",
   "files": [
@@ -8,12 +8,16 @@
   ],
   "scripts": {
     "build": "gulp build",
+    "get-namever": "node -p \"`${require('./package.json').name}@${require('./package.json').version}`\"",
+    "prepublish": "npm run build",
     "watch": "gulp"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "dependencies": {},
+  "dependencies": {
+    "amqplib": "^0.7.1"
+  },
   "devDependencies": {
     "@babel/core": "^7.13.16",
     "@babel/plugin-transform-runtime": "^7.13.15",
