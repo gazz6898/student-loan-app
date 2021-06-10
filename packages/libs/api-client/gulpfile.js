@@ -1,9 +1,16 @@
-const { src, dest, watch } = require('gulp');
+const gulp = require('gulp');
 const babel = require('gulp-babel');
-const uglify = require('gulp-uglify');
+const minify = require('gulp-minify');
+const sourcemaps = require('gulp-sourcemaps');
 
 function js() {
-  return src('src/**/*.js').pipe(uglify()).pipe(dest('dist/'));
+  return gulp
+    .src(['src/**/*.js'])
+    .pipe(sourcemaps.init())
+    .pipe(babel({ presets: ['@babel/env'], plugins: ['@babel/transform-runtime'] }))
+    .pipe(minify({ ext: { src: '.js', min: '.js' }, noSource: true }))
+    .pipe(sourcemaps.write())
+    .pipe(gulp.dest('dist/'));
 }
 
 exports.build = js;

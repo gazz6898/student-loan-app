@@ -4,7 +4,7 @@ const uglify = require('gulp-uglify');
 
 function build() {
   return gulp
-    .src('src/**/*.js')
+    .src('src/**/*.js', { since: gulp.lastRun(build) })
     .pipe(babel({ presets: ['@babel/env'], plugins: ['@babel/transform-runtime'] }))
     .pipe(uglify())
     .pipe(gulp.dest('dist/'));
@@ -13,7 +13,7 @@ function build() {
 exports.build = build;
 
 function watch() {
-  return gulp.watch('src/**/*.js', build);
+  gulp.watch('src/**/*.js', build);
 }
 
 exports.watch = watch;

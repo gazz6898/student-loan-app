@@ -2,8 +2,12 @@
 
 FROM node:14
 
+ARG SVC_PATH
+
+RUN echo ${SVC_PATH:-"no path provided... :("}
+
 # Create app directory
-WORKDIR /usr/app
+WORKDIR /usr/app/backend/db-service
 
 # Install app dependencies
 COPY package*.json .
@@ -11,8 +15,5 @@ RUN npm install
 
 # Bundle app build
 COPY dist /dist
-
-# If you are building your code for production
-# RUN npm ci --only=production
 
 CMD [ "npm", "run", "start:dev" ]

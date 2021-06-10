@@ -2,31 +2,57 @@ version: '3'
 
 services:
   # Backend Services
+  api-gateway:
+    build:
+      context: ./packages/backend/api-gateway
+      args:
+        SVC_PATH: api-gateway
+    image: api-gateway
+    container_name: api-gateway
+    restart: unless-stopped
+    environment:
+      - PORT=4000
+      - AMQP_HOST=host.docker.internal
+      - QUEUE_NAME=gateway_queue
+
+      - AUTH_PORT=4001
+      - AUTH_MAIN_QUEUE=auth_queue
+
+      - DB_PORT=4002
+    ports:
+      - '4000:4000'
+    volumes:
+      - ./packages/backend/api-gateway:/usr/app/backend/api-gateway
+      - ./packages/backend/api-gateway/node_modules:/usr/app/backend/api-gateway/node_modules
+      - ./packages/libs:/usr/app/libs
+    depends_on:
+      - rabbitmq
+    networks:
+      - student-loan-network
   auth-service:
     build:
       context: ./packages/backend/auth-service
-      args:
-        NPM_TOKEN:
     image: auth-service
     container_name: auth-service
     restart: unless-stopped
     environment:
       - PORT=4001
       - AMQP_HOST=host.docker.internal
-      - QUEUE_NAME=test_queue
+      - QUEUE_NAME=auth_queue
+      - JWT_SECRET=cb4f3ece71d6fed969b7f49f278e5a716f51bc630df949676c737a4e11084485c2a8e9af9ad9dfb1e037611b8bc09b6c92780fb2b97900c3f3bec9de8688f42c
     ports:
       - '4001:4001'
+    expose:
+      - 4001
     volumes:
-      - ./packages/backend/auth-service:/usr/app
-      - ./packages/backend/auth-service/node_modules:/usr/app/node_modules
-      - ./packages/libs:/usr/app/node_modules/@ku-loan-app
-    networks:
-      - student-loan-network
+      - ./packages/backend/auth-service:/usr/app/backend/auth-service
+      - ./packages/backend/auth-service/node_modules:/usr/app/backend/auth-service/node_modules
+      - ./packages/libs:/usr/app/libs
+    depends_on:
+      - rabbitmq
   db-service:
     build:
       context: ./packages/backend/db-service
-      args:
-        NPM_TOKEN:
     image: db-service
     container_name: db-service
     restart: unless-stopped
@@ -36,16 +62,33 @@ services:
       - MONGO_PORT=27017
       - MONGO_DB=studentLoanDB
       - AMQP_HOST=host.docker.internal
-      - QUEUE_NAME=test_queue
+      - QUEUE_NAME=db_queue
     ports:
       - '4002:4002'
+    expose:
+      - 4002
     depends_on:
       - db
       - rabbitmq
     volumes:
-      - ./packages/backend/db-service:/usr/app
-      - ./packages/backend/db-service/node_modules:/usr/app/node_modules
-      - ./packages/libs:/usr/app/node_modules/@ku-loan-app
+      - ./packages/backend/db-service:/usr/app/backend/db-service
+      - ./packages/backend/db-service/node_modules:/usr/app/backend/db-service/node_modules
+      - ./packages/libs:/usr/app/libs
+    networks:
+      - student-loan-network
+  bank-db-service:
+    build:
+      context: ./external/bank-db-service
+    image: bank-db-service
+    container_name: bank-db-service
+    restart: unless-stopped
+    environment:
+      - PORT=5000
+    ports:
+      - '5000:5000'
+    volumes:
+      - ./external/bank-db-service:/app
+      - ./external/bank-db-service/__pycache__:/app/__pycache__
     networks:
       - student-loan-network
   # Auxiliary Services
@@ -71,6 +114,7 @@ services:
       - rabbitmqlogs:/var/log/rabbitmq/
     networks:
       - student-loan-network
+
 networks:
   student-loan-network:
     driver: bridge

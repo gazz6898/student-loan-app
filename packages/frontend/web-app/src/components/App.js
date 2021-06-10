@@ -1,77 +1,89 @@
 import React, { PureComponent } from 'react';
 import { withStyles } from '@material-ui/styles';
+import PropTypes from 'prop-types';
 
-import { connect } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 
-import Button from '@material-ui/core/Button';
-import Card from '@material-ui/core/Card';
-import CardActions from '@material-ui/core/CardActions';
-import CardContent from '@material-ui/core/CardContent';
-import CardHeader from '@material-ui/core/CardHeader';
-import Container from '@material-ui/core/Container';
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Link,
+  Redirect,
+  useHistory,
+  useLocation,
+} from 'react-router-dom';
 
-import { APIS, client } from '@ku-loan-app/libs-api-client';
+import Typography from '@material-ui/core/Typography';
 
 import Login from './Login';
+import Navbar from './Navbar';
+import ProtectedRoute from './ProtectedRoute';
 
-import { login } from '../util/redux/reducers/metadata';
+import { requestLogin, signout } from '~/util/redux/reducers/metadata';
+import routes from '~/util/routes';
 
 const styles = theme => ({
   root: {
     position: 'absolute',
-    top: 0,
+    top: theme.spacing(8),
     bottom: 0,
     left: 0,
     right: 0,
 
     display: 'flex',
+    flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
 
     backgroundColor: theme.palette.background.dark,
     padding: theme.spacing(),
+
+    overflow: 'hidden',
   },
 
-  actionBar: {
-    justifyContent: 'flex-end',
+  spacer: {
+    flexGrow: 1,
   },
 });
 
-class App extends PureComponent {
-  constructor(props) {
-    super(props);
+const App = ({ classes }) => {
+  const dispatch = useDispatch();
+  const history = useHistory();
+  const location = useLocation();
 
-    this.state = {
-      backendResponse: null,
-    };
-  }
+  return (
+    <div className={classes.root}>
+      <Navbar />
+      <Switch>
+        <Route path='/login'>
+          <Login
+            onSubmit={payload => {
+              dispatch(requestLogin(payload)).then(() =>
+                history.replace(location?.state?.from ?? { pathname: '/' })
+              );
+            }}
+          />
+        </Route>
 
-  async componentDidMount() {
-    const backendResponse = await client
-      .query({ model: 'User', where: {} });
-    this.setState({ backendResponse });
-  }
+        {routes.map(({ path, Component, componentProps }) => (
+          <ProtectedRoute key={path} path={path} exact={path === '/'}>
+            <Component {...componentProps} />
+          </ProtectedRoute>
+        ))}
 
-  render() {
-    const { classes, login, token } = this.props;
-    const { backendResponse } = this.state;
+        <Route path='*'>
+          <Typography variant='h1' color='error'>
+            404
+          </Typography>
+        </Route>
+      </Switch>
+    </div>
+  );
+};
 
-    return (
-      <div className={classes.root}>
-        <Container maxWidth='sm'>
-          <Card>
-            <CardHeader title='Student Loan App' />
-            <CardContent>
-              <pre>{`Token: ${token}`}</pre>
-            </CardContent>
-            <Login onSubmit={login} />
-          </Card>
-        </Container>
-      </div>
-    );
-  }
-}
+App.propTypes = {};
 
-const mapStateToProps = ({ metadata: { token } }) => ({ token });
+App.defaultProps = {};
 
-export default connect(mapStateToProps, { login })(withStyles(styles)(App));
+export default withStyles(styles)(App);

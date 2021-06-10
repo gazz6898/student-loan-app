@@ -4,9 +4,9 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "build": "docker compose --file=../../../docker-compose.yml up -d --build db-service",
+    "build": "gulp build",
     "watch": "gulp watch",
-    "start:dev": "nodemon -L --watch dist",
+    "start:dev": "nodemon --delay 5 -L --watch dist",
     "start": "node ./dist"
   },
   "events": {
@@ -17,6 +17,7 @@
   "license": "ISC",
   "dependencies": {
     "amqplib": "^0.7.1",
+    "axios": "^0.21.1",
     "convict": "^6.0.1",
     "cors": "^2.8.5",
     "express": "^4.17.1",

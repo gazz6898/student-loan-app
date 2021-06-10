@@ -10,6 +10,11 @@ const schema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  accessControlPolicies: {
+    type: [String],
+    default: () => [],
+    required: true
+  },
 });
 
 export default {
