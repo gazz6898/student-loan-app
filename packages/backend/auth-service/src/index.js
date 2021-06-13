@@ -51,13 +51,6 @@ const start = async (retries = 0) =>
             const token = jwt.sign({ email }, config.get('jwt.secret'), {
               expiresIn: '1800s',
             });
-
-            const authTokens = await messagePromise({
-              channel,
-              data: { model: 'AuthToken', where: { user_id: user._id } },
-              exchange: 'db',
-              routingKey: 'query.authToken',
-            });
             
             const authTokens = await messagePromise({
               channel,
