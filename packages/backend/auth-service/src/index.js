@@ -52,14 +52,7 @@ const start = async (retries = 0) =>
               expiresIn: '1800s',
             });
             
-            const authTokens = await messagePromise({
-              channel,
-              data: { model: 'AuthToken', data: [{ user_id: user._id, token }] },
-              exchange: 'db',
-              routingKey: 'insert.authToken',
-            });
-
-            res.send({ token });
+            res.json({ token });
           } else {
             res.sendStatus(401);
           }
