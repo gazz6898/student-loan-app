@@ -52,7 +52,7 @@ const start = async (retries = 0) =>
               expiresIn: '1800s',
             });
             
-            res.json({ token });
+            res.json({ token, user });
           } else {
             res.sendStatus(401);
           }

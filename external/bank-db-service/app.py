@@ -173,3 +173,11 @@ def app_find_student_loan():
     if request.method == "POST":
         result = find_student_loan(**request.json)
         return jsonify(result)
+
+@app.route('/apply/<loan_id>', methods=["POST"])
+def app_apply_student_loan(loan_id):
+    if request.method == "POST":
+        student_id = request.json["student_id"]
+        student = find_student(studID=student_id)[0]
+        loan_application = applyLoan(firstName=student["firstName"], lastName=student["lastName"], loanID=loan_id)
+        return jsonify(loan_application)

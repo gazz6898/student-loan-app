@@ -28,15 +28,15 @@ const metadataSlice = createSlice({
   extraReducers: {
     [requestLogin.fulfilled.type]: (state, action) => {
       const {
-        payload: { token },
-        meta: {
-          arg: { email: user },
+        payload: {
+          token,
+          user: { _id: id },
         },
       } = action;
       state.token = token;
       localStorage.setItem('jwt', token);
-      state.user = user;
-      localStorage.setItem('user', user);
+      state.user = id;
+      localStorage.setItem('user', id);
     },
     [requestLogin.rejected.type]: (state, action) => {
       console.error(action.payload);

@@ -7,6 +7,8 @@ import HowToRegIcon from '@material-ui/icons/HowToReg';
 import Screen from '~/components/Screen';
 import TableScreen from '~/components/TableScreen';
 
+import { APIS, client } from '@ku-loan-app/libs-api-client';
+
 /**
  * @type {{
  *  path: string,
@@ -45,7 +47,12 @@ export default [
           title: 'Apply',
           disabled: selectedData => !selectedData.length,
           InnerComponent: HowToRegIcon,
-          action: () => {},
+          action: async (selectedLoans, { dispatch, metadata: { user } }) => {
+            for await (const { _id } of selectedLoans) {
+              await client
+                .json({ api: APIS.EXTDB, route: `/apply/${_id}` }, { student_id: user });
+            }
+          },
         },
       ],
     },
@@ -80,6 +87,22 @@ export default [
       columns: [
         { name: '_id', label: 'ID', format: 'string', visible: false },
         { name: 'approved', label: 'Approved', format: 'boolean' },
+        { name: 'bank', label: 'Bank', format: 'string' },
+        {
+          name: 'interest',
+          label: 'Interest',
+          format: 'number',
+          transformer: x => `${(x * 100).toFixed(2)}%`,
+        },
+        {
+          name: 'principal',
+          label: 'Principal',
+          format: 'number',
+          transformer: x => `$${x.toFixed(2)}`,
+        },
+        { name: 'subsidized', label: 'Subsidized', format: 'boolean' },
+        { name: 'first name', label: 'Student First Name', format: 'string' },
+        { name: 'last name', label: 'Student Last Name', format: 'string' },
       ],
       labelField: '_id',
     },

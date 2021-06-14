@@ -24,6 +24,9 @@ import ClearIcon from '@material-ui/icons/Clear';
 
 import { APIS, client } from '@ku-loan-app/libs-api-client';
 
+import withDispatch from '../hoc/withDispatch';
+import withMetadata from '../hoc/withMetadata';
+
 const TABLE_HEADER_SIZE = '64px';
 const TABLE_FOOTER_SIZE = '64px';
 
@@ -354,4 +357,4 @@ TableScreen.defaultProps = {
   actions: [],
 };
 
-export default withStyles(styles)(TableScreen);
+export default withDispatch(withMetadata(withStyles(styles)(TableScreen)));

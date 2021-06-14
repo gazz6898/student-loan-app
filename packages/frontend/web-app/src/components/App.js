@@ -5,11 +5,8 @@ import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 
 import {
-  BrowserRouter as Router,
   Switch,
   Route,
-  Link,
-  Redirect,
   useHistory,
   useLocation,
 } from 'react-router-dom';
