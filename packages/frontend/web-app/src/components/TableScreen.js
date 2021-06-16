@@ -26,6 +26,7 @@ import { APIS, client } from '@ku-loan-app/libs-api-client';
 
 import withDispatch from '../hoc/withDispatch';
 import withMetadata from '../hoc/withMetadata';
+import withMessage from '../hoc/withMessage';
 
 const TABLE_HEADER_SIZE = '64px';
 const TABLE_FOOTER_SIZE = '64px';
@@ -357,4 +358,4 @@ TableScreen.defaultProps = {
   actions: [],
 };
 
-export default withDispatch(withMetadata(withStyles(styles)(TableScreen)));
+export default withMessage(withDispatch(withMetadata(withStyles(styles)(TableScreen))));

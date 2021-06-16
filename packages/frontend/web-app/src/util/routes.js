@@ -47,11 +47,15 @@ export default [
           title: 'Apply',
           disabled: selectedData => !selectedData.length,
           InnerComponent: HowToRegIcon,
-          action: async (selectedLoans, { dispatch, metadata: { user } }) => {
+          action: async (selectedLoans, { dispatch, metadata: { user }, setMessage }) => {
             for await (const { _id } of selectedLoans) {
-              await client
-                .json({ api: APIS.EXTDB, route: `/apply/${_id}` }, { student_id: user });
+              await client.json({ api: APIS.EXTDB, route: `/apply/${_id}` }, { student_id: user });
             }
+            setMessage(
+              selectedLoans.length > 1
+                ? `Applied for ${selectedLoans.length} loans.`
+                : `Applied for loan.`
+            );
           },
         },
       ],
