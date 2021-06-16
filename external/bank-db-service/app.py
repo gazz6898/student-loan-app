@@ -1,6 +1,8 @@
+from typing import Any, Callable, Dict, Type
+
 import pymongo
-from typing import Any, Callable, Dict
 from flask import Flask, request, jsonify
+from flask.wrappers import Response
 from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
@@ -11,29 +13,85 @@ loan_client = pymongo.MongoClient(
 student_client = pymongo.MongoClient(
     "mongodb://user:ketteringb@18.117.147.179/")
 
-
-def is_none(x: Any):
-    return x is None
-
-
-def prop_eq(key: str, value: Any) -> (Callable[[Dict[str, Any]], bool]):
-    return lambda d: d[key] == value
-
-
-def insert_loan(bank=None, principal=None, interest=None, subsidized=None):
-    if any(is_none, [bank, principal, interest, subsidized]):
-        raise Exception("Invalid insert")
-
-    loan_document = {
-        "bank": bank,
-        "principal": principal,
-        "interest": interest,
-        "subsidized": subsidized
+schemas = {
+    "Loan": {
+        "min": {
+            "bank": str,
+            "principal": int,
+            "interest": float,
+            "subsidized": bool
+        }
+    },
+    "Student": {
+        "min": {
+            "Username": str,
+            "Password": str,
+            "firstName": str,
+            "lastName": str,
+            "Email": str,
+            "Student ID": str,
+            "Credit Score": str
+        }
+    },
+    "LoanApplication": {
+        "min": {
+            "firstName": str,
+            "lastName": str,
+            "loanID": str
+        }
     }
-    print(loan_document)
+}
 
-    loanCollection = loan_client["Loans"]["allLoans"]
-    loanCollection.insert_one(loan_document)
+class SchemaMismatchException(Exception):
+    pass
+
+def verify_schema(typename: str):
+    type_schemas: Dict[str, Dict[str, Type]] = schemas.get(typename)
+
+    if type_schemas == None:
+        raise SchemaMismatchException(f'No schemas found for type "{typename}"')
+
+    min_schema = type_schemas.get("min")
+
+    if min_schema == None:
+        raise SchemaMismatchException(f'No min schema found for type "{typename}"')
+
+    max_schema: Dict[str, Type] = type_schemas.get("max", min_schema)
+
+    def verify(data: Dict[str, Any]) -> Dict[str, Any]:
+        for field in min_schema:
+            app.logger.debug(
+                f'Verifying field "{field}" for type {typename}...')
+            if data.get(field) == None:
+                raise SchemaMismatchException(
+                    f'Missing required field "{field}" on type {typename}.')
+
+        for data_field in data:
+            app.logger.debug(
+                f'Verifying field "{field}" against {typename} schema...')
+            field_type = max_schema.get(data_field)
+            data_type = type(data[data_field])
+            if field_type == None:
+                raise SchemaMismatchException(
+                    f'Unknown field "{data_field}" supplied for type {typename}.')
+            elif data_type != field_type:
+                raise SchemaMismatchException(
+                    f'Field "{data_field}" must be of type {str(field_type)}; got {str(data_type)}.')
+
+        return data
+
+    return verify
+
+
+verify_loan_schema = verify_schema("Loan")
+
+
+def insert_loan(__dry=False, **doc):
+    loan_document = verify_loan_schema(doc)
+
+    if not __dry:
+        loanCollection = loan_client["Loans"]["allLoans"]
+        loanCollection.insert_one(loan_document)
 
 
 def find_loan(minPrincipal=None, maxPrincipal=None, minInterest=None, maxInterest=None, sub=None, loanID=None):
@@ -44,8 +102,6 @@ def find_loan(minPrincipal=None, maxPrincipal=None, minInterest=None, maxInteres
     for loan in allLoans:
         loan["_id"] = str(loan["_id"])
         filteredLoans.append(loan)
-
-    app.logger.info(filteredLoans)
 
     # MINIMUM PRINCIPAL FILTER
     if(minPrincipal != None):
@@ -80,19 +136,15 @@ def find_loan(minPrincipal=None, maxPrincipal=None, minInterest=None, maxInteres
     return filteredLoans
 
 
-def insert_student(user=None, password=None, firstName=None, lastName=None, email=None, studID=None, credScore=None):
-    studentDocument = {
-        "Username": user,
-        "Password": password,
-        "firstName": firstName,
-        "lastName": lastName,
-        "Email": email,
-        "Student ID": studID,
-        "Credit Score": credScore
-    }
+verify_student_schema = verify_schema("Student")
 
-    studentCollection = student_client["Students"]["allStudents"]
-    studentCollection.insert_one(studentDocument)
+
+def insert_student(__dry=False, **doc):
+    studentDocument = verify_student_schema(doc)
+
+    if not __dry:
+        studentCollection = student_client["Students"]["allStudents"]
+        studentCollection.insert_one(studentDocument)
 
 
 def find_student(firstName=None, lastName=None, studID=None, email=None):
@@ -122,8 +174,15 @@ def find_student(firstName=None, lastName=None, studID=None, email=None):
     return filteredStudents
 
 
-def applyLoan(firstName=None, lastName=None, loanID=None):
+verify_apply_loan = verify_schema("LoanApplication")
 
+
+def apply_loan(__dry=False, firstName=None, lastName=None, loanID=None):
+    verify_apply_loan({
+        "firstName": firstName,
+        "lastName": lastName,
+        "loanID": loanID
+    })
     loan = find_loan(loanID=loanID)
     loan = loan[0]
     studentLoanDocument = {
@@ -135,8 +194,10 @@ def applyLoan(firstName=None, lastName=None, loanID=None):
         "first name": firstName,
         "last name": lastName
     }
-    studentLoanCollection = student_client["StudentLoans"]['studentLoans']
-    studentLoanCollection.insert_one(studentLoanDocument)
+
+    if not __dry:
+        studentLoanCollection = student_client["StudentLoans"]['studentLoans']
+        studentLoanCollection.insert_one(studentLoanDocument)
 
 
 def find_student_loan(bank=None):
@@ -155,12 +216,12 @@ def find_student_loan(bank=None):
     return filteredLoans
 
 
-
 @app.route('/find/loan', methods=["POST"])
 def app_find_loan():
     if request.method == "POST":
         result = find_loan(**request.json)
         return jsonify(result)
+
 
 @app.route('/find/student', methods=["POST"])
 def app_find_student():
@@ -168,16 +229,27 @@ def app_find_student():
         result = find_student(**request.json)
         return jsonify(result)
 
+
 @app.route('/find/studentLoan', methods=["POST"])
 def app_find_student_loan():
     if request.method == "POST":
         result = find_student_loan(**request.json)
         return jsonify(result)
 
+
 @app.route('/apply/<loan_id>', methods=["POST"])
 def app_apply_student_loan(loan_id):
     if request.method == "POST":
-        student_id = request.json["student_id"]
-        student = find_student(studID=student_id)[0]
-        loan_application = applyLoan(firstName=student["firstName"], lastName=student["lastName"], loanID=loan_id)
-        return jsonify(loan_application)
+        try:
+            student_id = request.json["student_id"]
+            students = find_student(studID=student_id)
+            if len(students) == 0:
+                raise Exception(f'No student found with ID {student_id}')
+            student = students[0]
+            loan_application = apply_loan(
+                firstName=student["firstName"], lastName=student["lastName"], loanID=loan_id)
+            return jsonify(loan_application)
+        except KeyError:
+            return Response(jsonify({"error": 'Request body must contain a "student_id" property.'}).response, 400)
+        except Exception as e:
+            return Response(jsonify({"error": str(e)}).response, 500)
